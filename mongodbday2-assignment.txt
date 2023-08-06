@@ -1,0 +1,54 @@
+1. Find all the topics and tasks which are thought in the month of October
+
+
+db.topics.aggregate([{$match:{$expr:{$eq:[{$month:"$date"},10]}}},{$project:{_id:0,type:"Topic",title:"$topic",description:1,date:1}},{$unionWith:{coll:"alltasks",pipeline:[{$match:{$expr:{$eq:[{$month:"$date"},10]}}},{$project:{_id:0,type:"Task",title:"$task",details:1,date:1}}]}}]);
+
+
+
+
+
+2. Find all the company drives which appeared between 15 oct-2020 and 31-oct-2020
+
+
+db.company_drives.find({drive_date:{$gt:ISODate("2020-10-15"), $lt:ISODate("2020-10-31")}})
+
+
+
+
+3. Find all the company drives and students who are appeared for the placement
+
+
+db.trailusers.aggregate([ { $match: { placement_id: { $gt: 0 } } }, {$project:{name:1, placement_id:1, _id:0, company_name:1}}, {$unionWith:{coll:"company_drives",pipeline:[{$match:{company_id:{$eq:"$placement_id"}}}, {$project:{_id:0, date:"$company_name"}}]}}]).toArray()
+
+
+
+
+4. Find the number of problems solved by the user in codekata
+
+
+let name = "surya"
+
+db.codekata.find({name:name}).forEach((data)=>{print(data.name); print(data.problems_solved)})
+
+
+
+
+5. Find all the mentors with who has the mentee's count more than 15.
+
+
+
+
+db.mentors.aggregate([{$lookup:{from:"users",localField:"mentor_id",foreignField:"mentor_id",as:"mentees",},},{$addFields:{menteeCount:{$size:"$mentees"},},},{$match:{menteeCount:{$gt:15}}},{$project:{_id:0,mentorName:"$name",menteeCount:1}}]);
+
+
+
+
+6. Find the number of users who are absent and task is not submitted  between 15 oct-2020 and 31-oct-2020
+
+
+
+
+db.tasksuser.aggregate([ { $lookup: { from: "alltasks", localField: "stud_id", foreignField: "stud_id", as: "users" } }, { $unwind: "$users" }, { $match: { $and: [ {absent: { $gte: ISODate("2020-10-15"), $lte: ISODate("2020-10-31") } }, { "users.submitted": { $eq: "no" } }] } }, { $group: { _id: null, count: { $sum: 1 } } }, { $project: { _id: 0, count: 1 } }])
+
+
+
