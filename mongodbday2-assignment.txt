@@ -18,7 +18,8 @@ db.company_drives.find({drive_date:{$gt:ISODate("2020-10-15"), $lt:ISODate("2020
 3. Find all the company drives and students who are appeared for the placement
 
 
-db.trailusers.aggregate([ { $match: { placement_id: { $gt: 0 } } }, {$project:{name:1, placement_id:1, _id:0, company_name:1}}, {$unionWith:{coll:"company_drives",pipeline:[{$match:{company_id:{$eq:"$placement_id"}}}, {$project:{_id:0, date:"$company_name"}}]}}]).toArray()
+db.users.aggregate([{ $match: { placed: { $eq: true } } }, { $project: { _id: 0, name: 1, company_name: 1, placed: 1 } }, { $unionWith: { coll: "company_drives", pipeline: [{ $match: { company_id: { $eq: "$placement_id" } } }, {
+ $project: { _id: 0, placed_id: "$company_id" } }] } }]).toArray()
 
 
 
